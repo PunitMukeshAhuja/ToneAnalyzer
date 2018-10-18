@@ -2,9 +2,12 @@ package com.example.punit.toneanalyzer;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -12,13 +15,24 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+
+import java.util.Locale;
 
 import com.ibm.watson.developer_cloud.http.ServiceCallback;
+import com.ibm.watson.developer_cloud.language_translation.v2.model.Language;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.ToneAnalyzer;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.Tone;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneAnalysis;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneOptions;
 import com.ibm.watson.developer_cloud.tone_analyzer.v3.model.ToneScore;
+import com.ibm.watson.developer_cloud.language_translator.v2.LanguageTranslator;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -29,11 +43,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.ibm.watson.developer_cloud.language_translator.v2.model.Language.ENGLISH;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView txtSpeechInput;
     private ImageButton btnSpeak;
     private final int REQ_CODE_SPEECH_INPUT = 100;
+    private LanguageTranslator translationService;
+    TextToSpeech t1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +67,15 @@ public class MainActivity extends AppCompatActivity {
                 promptSpeechInput();
             }
         });
+        t1=new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if(status != TextToSpeech.ERROR) {
+                    t1.setLanguage(Locale.UK);
+                }
+            }
+        });
+
     }
 
     /**
@@ -233,4 +260,54 @@ public class MainActivity extends AppCompatActivity {
                 });
 
     }
+
+    private LanguageTranslator initLanguageTranslatorService() {
+        LanguageTranslator service = new LanguageTranslator();
+        String username = "4b2181d1-591b-4d6c-9222-75f6c79db7d2";
+        String password = "dmh7lJQjItoP";
+        service.setUsernameAndPassword(username, password);
+        service.setEndPoint("https://gateway.watsonplatform.net/language-translator/api");
+        return service;
+    }
+
+    public void translate(View v){
+        translationService=initLanguageTranslatorService();
+        //EditText userInput = (EditText)findViewById(R.id.user_input);
+
+        new TranslationTask().execute(txtSpeechInput.getText().toString());
+    }
+
+    class TranslationTask extends AsyncTask<String, Void, String> {
+
+
+        @Override
+        protected String doInBackground(String... params) {
+            String newText="";
+            newText=(translationService.translate(params[0],"en-es").execute().getFirstTranslation());
+            Log.e("translated text",newText);
+            return newText;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            txtSpeechInput.setText(result);
+
+            String toSpeak = result;
+            t1.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+            Log.e("speech","spoken "+result);
+                    }
+
+        private void showTranslation(final String translation) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    //translatedText.setText(translation);
+                    Toast.makeText(getBaseContext(),translation,Toast.LENGTH_LONG);
+
+                }
+            });
+        }
+
+    }
+
 }

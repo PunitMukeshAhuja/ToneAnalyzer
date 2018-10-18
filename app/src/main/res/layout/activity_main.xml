@@ -26,7 +26,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
 
-<ImageButton
+    <ImageButton
         android:id="@+id/btnSpeak"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -48,14 +48,14 @@
     android:id="@+id/container"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Or Type something"
-        android:textColor="@color/white"
-        android:textColorHint="@color/white"
-        android:id="@+id/user_input"
-        android:lines="3"/>
+        <EditText
+            android:id="@+id/user_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Or Type something"
+            android:lines="3"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white" />
 
     </android.support.design.widget.TextInputLayout>
 
@@ -67,4 +67,14 @@
         android:onClick="analyzeText"
         android:text="Analyze Text" />
     </LinearLayout>
+
+    <Button
+        android:id="@+id/translate_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="translate"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="11dp"
+        android:text="Translate" />
 </RelativeLayout>
